@@ -35,6 +35,7 @@ export default class Game {
     public players: User[] = [];
     public grave: Card | null = null;
     public turn: User | null = null;
+    public playing: Card | null = null;
 
     constructor (public readonly id: string) { }
 
