@@ -67,6 +67,8 @@ export default class Game {
     public grave: Card | null = null;
     public turn: User | null = null;
     public playing: Card | null = null;
+    public state: "pickup" | "discard" | "choose" = "pickup";
+    public stateAgent: "player" | "opponent" = "player";
 
     constructor (public readonly id: string, public frender: ActionDispatch<[]>) {
         this.players = [];
@@ -121,6 +123,5 @@ export default class Game {
     checkEnd(): boolean {
         return false;
     }
-
 
 }

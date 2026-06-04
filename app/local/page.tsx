@@ -33,12 +33,12 @@ function Hand({ id }: { id: number; }) {
                 <div className="hand-background rounded-md py-4 px-8 flex flex-col items-center justify-center">
                     <div className="flex flex-row items-center justify-center gap-2 font-semibold text-lg mb-2">
                         <CircleUser />
-                        <p>{id === 0 ? "Opponent's hand" : "Your hand"}</p>
+                        <p>{id === 0 ? "Opponent's hand" : "Your hand"} [{game[0].players[id].hand.length}]</p>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-2">
                         {
                             game[0].players[id].hand.map((card, index) => (
-                                <Image src={`/cards/playing_cards/${card.value === 1 ? "A" : card.value}_of_diamonds.png`} alt={`${card.value}`} width={256} height={256} className="w-28 h-auto" key={index} />
+                                <Image src={`/cards/playing_cards/${card.value === 1 ? "A_of_diamonds" : card.value === 10 ? "T_of_diamonds" : card.value === 0 ? "red_joker" : `${card.value}_of_diamonds`}.png`}alt={`${card.value}`} width={256} height={256} className="w-28 h-auto" key={index} />
                             ))
                         }
                     </div>
@@ -55,10 +55,21 @@ function Hand({ id }: { id: number; }) {
 function Deck() {
     const game = useGameC();
 
+
+    function deckClick(e: React.MouseEvent) {
+        if (!game[0]) return;
+        const top = game[0].deck.pop();
+        if (!top) return;
+
+        game[0].players[1].draw(top);
+        game[0].frender();
+        return;
+    }
+
     return (
         <GameContext.Provider value={game}>
             <div className="hand-background rounded-md py-4 px-8 flex items-center justify-center flex-col">
-                <Image src="/cards/back.png" width={256} height={256} alt="card deck" className="w-28 h-auto" />
+                <Image src="/cards/back.png" width={256} height={256} alt="card deck" className="w-28 h-auto" onClick={deckClick} />
                 <p className="text-white/60 pt-4">Cards left: { game[0] ? game[0].deck.length : "game loading..." }</p>
             </div>
         </GameContext.Provider>
