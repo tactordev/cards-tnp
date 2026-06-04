@@ -1,3 +1,4 @@
+"use client";
 import * as ably from 'ably';
 import { AblyProvider, ChannelProvider } from "ably/react";
 
