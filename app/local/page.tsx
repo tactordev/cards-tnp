@@ -91,7 +91,7 @@ function DiscardedHand({ id }: { id: number; }) {
     return (
         gc && gc.game && (
             <div>
-                <div className="hand-background rounded-md py-4 px-8 flex flex-col items-center justify-center w-78">
+                <div className="hand-background rounded-md py-4 px-8 flex flex-col items-center justify-center w-78 h-full">
                     <div className="flex flex-row items-center justify-center gap-2 font-semibold text-lg mb-2">
                         <CircleUser />
                         <p className="flex items-center min-w-0 overflow-hidden"><span className="inline-block truncate mr-1">{id === 0 ? "Opponent's" : "Your"}</span><span className="shrink-0">discards [{gc.game.players[id].discarded.length}]</span></p>    
@@ -174,7 +174,7 @@ export default function LocalGame() {
         <GameContext.Provider value={gc}>
             <main className="fixed top-0 left-0 w-screen h-screen boarded-background flex flex-col gap-12 items-center justify-center">
                 <Prompt />
-                <div className="flex flex-row gap-2"> {/* opponent hand */}
+                <div className="flex flex-row gap-4"> {/* opponent hand */}
                     <Hand id={0} />
                     <DiscardedHand id={0} />
                 </div>
@@ -188,7 +188,7 @@ export default function LocalGame() {
                     </div>
                 </div>
 
-                <div className="flex flex-row gap-2"> {/* player hand */}
+                <div className="flex flex-row gap-4"> {/* player hand */}
                     <Hand id={1} />
                     <DiscardedHand id={1} />
                 </div>
