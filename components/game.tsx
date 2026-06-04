@@ -45,10 +45,11 @@ export class Card {
 
 export class User {
     public hand: Card[] = [];
+    public discarded: Card[] = [];
     public eliminated: boolean = false;
     public protected: boolean = false;
 
-    constructor(public readonly id: string, public name: string) { };
+    constructor(public readonly id: number, public name: string) { };
 
     draw(card: Card) {
         return this.hand.push(card);
@@ -68,11 +69,12 @@ export default class Game {
     public turn: User | null = null;
     public playing: Card | null = null;
     public state: "pickup" | "discard" | "choose" = "pickup";
-    public stateAgent: "player" | "opponent" = "player";
+    public stateAgent: number;
 
     constructor (public readonly id: string, public frender: ActionDispatch<[]>) {
         this.players = [];
-        this.initialise([new User("1", "user"), new User("2", "computer")]);
+        this.stateAgent = 1;
+        this.initialise([new User(0, "Opponent"), new User(1, "you")]);
 
     }
 
@@ -122,6 +124,24 @@ export default class Game {
 
     checkEnd(): boolean {
         return false;
+    }
+
+    increment(): void {
+        if (this.state === "pickup") {
+            this.state = "discard";
+            return;
+        } else if (this.state === "discard") {
+            // handle checks for: 0, 10
+            this.state = "choose";
+        } else if (this.state === "choose") {
+            // handle logic for the card played
+            this.state = "pickup";
+            this.stateAgent = this.stateAgent === 0 ? 1 : 0;
+
+            // if switching to automated opponent, add logic here for simulating opponent's moves
+
+            return;
+        }
     }
 
 }

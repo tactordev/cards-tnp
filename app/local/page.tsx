@@ -3,6 +3,7 @@ import { createContext, useState, useEffect, useReducer, useContext } from "reac
 import Image from "next/image";
 import Game, { Card, User } from "@/components/game";
 import Toasts, { ToastsC } from "@/components/toasts";
+import { AnimatePresence, motion } from "motion/react";
 import { 
     Circle,
     CircleSlash,
@@ -32,12 +33,22 @@ function Prompt() {
 
     function sendToast() {
         if (!gc.tm) return;
-        gc.tm.send("testing");
+        gc.tm.send("Why'd you click here? You need something?");
     }
+
+    if (!gc || !gc.game) return;
     return (
-        <div className="absolute top-4 left-4">
+        <div className="absolute top-4 left-4 w-64">
             <div className="hand-background rounded-md px-4 py-2" onClick={sendToast}>
-                <p>Game loading...</p>
+                <AnimatePresence>
+                    <motion.p>
+                        Waiting for {gc.game.players[gc.game.stateAgent].name} to {
+                            gc.game.state === "pickup" ? "pick up a card from the deck."
+                            : gc.game.state === "discard" ? `use a card from ${gc.game.stateAgent === 1 ? "your" : "their"} hand.`
+                            : `choose a person to use ${gc.game.stateAgent === 1 ? "your" : "their"} card against.`
+                        }
+                    </motion.p>
+                </AnimatePresence>
             </div>
             <ToastsC tm={gc.tm} />
         </div>
@@ -52,7 +63,7 @@ function Hand({ id }: { id: number; }) {
             gc.game.deck.length === 0 ? 
                 <div>Handing out cards...</div>
             : (
-                <div className="hand-background rounded-md py-4 px-8 flex flex-col items-center justify-center">
+                <div className={`hand-background rounded-md py-4 px-8 flex flex-col items-center justify-center ${gc.game.stateAgent === id ? "bg-blue-600/20" : ""} w-72`}>
                     <div className="flex flex-row items-center justify-center gap-2 font-semibold text-lg mb-2">
                         <CircleUser />
                         <p>{id === 0 ? "Opponent's hand" : "Your hand"} [{gc.game.players[id].hand.length}]</p>
@@ -74,16 +85,42 @@ function Hand({ id }: { id: number; }) {
     )
 }
 
+function DiscardedHand({ id }: { id: number; }) {
+    const gc = useGameC();
+
+    return (
+        gc && gc.game && (
+            <div>
+                <div className="hand-background rounded-md py-4 px-8 flex flex-col items-center justify-center w-78">
+                    <div className="flex flex-row items-center justify-center gap-2 font-semibold text-lg mb-2">
+                        <CircleUser />
+                        <p className="flex items-center min-w-0 overflow-hidden"><span className="inline-block truncate mr-1">{id === 0 ? "Opponent's" : "Your"}</span><span className="shrink-0">discards [{gc.game.players[id].discarded.length}]</span></p>    
+                    </div>
+                    <div className="flex flex-row items-center justify-center gap-2">
+                        add discarded cards here
+                    </div>
+                </div>
+            </div>
+        )
+    )
+}
+
 function Deck() {
     const gc = useGameC();
 
 
     function deckClick(e: React.MouseEvent) {
-        if (!gc.game) return;
+        if (!gc.game || !gc.tm) return;
+        if (gc.game.state !== "pickup" && gc.game.stateAgent !== 0) {
+            gc.tm.send("You cannot pick up a card right now.", "warning", 3000);
+            return;
+        }
         const top = gc.game.deck.pop();
         if (!top) return;
 
         gc.game.players[gc.playerId].draw(top);
+
+        gc.game.increment();
         gc.game.frender();
         return;
     }
@@ -137,8 +174,9 @@ export default function LocalGame() {
         <GameContext.Provider value={gc}>
             <main className="fixed top-0 left-0 w-screen h-screen boarded-background flex flex-col gap-12 items-center justify-center">
                 <Prompt />
-                <div className="flex flex-row"> {/* opponent hand */}
+                <div className="flex flex-row gap-2"> {/* opponent hand */}
                     <Hand id={0} />
+                    <DiscardedHand id={0} />
                 </div>
 
                 <div className="flex flex-row gap-4">
@@ -150,8 +188,9 @@ export default function LocalGame() {
                     </div>
                 </div>
 
-                <div> {/* player hand */}
+                <div className="flex flex-row gap-2"> {/* player hand */}
                     <Hand id={1} />
+                    <DiscardedHand id={1} />
                 </div>
             </main>
         </GameContext.Provider>

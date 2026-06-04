@@ -56,7 +56,7 @@ export function ToastsC({
             
             <AnimatePresence>
                 { tm && tm.toasts.map((toast) => (
-                    <motion.li initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.2 }} exit={{ scale: 0 }} className={
+                    <motion.li initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className={
                         `flex items-center justify-between gap-4 px-3 py-2 rounded-md shadow-md text-sm font-medium border text-white
                         ${
                             toast.type === "success" ? "bg-green-600/20 border-green-500/40" : 
