@@ -12,7 +12,7 @@ export default class Toasts {
     }
 
 
-    send(message: string, type: "info" | "success" | "error" = "info", duration = 3000) {
+    send(message: string, type: "info" | "success" | "warning" | "error" = "info", duration = 3000) {
         const toast = new Toast(message, type, duration);
         this.toasts.push(toast);
         
@@ -31,12 +31,12 @@ export default class Toasts {
 export class Toast {
     public id: string;
     public message: string;
-    public type: "info" | "success" | "error";
+    public type: "info" | "success" | "warning" | "error";
     public duration: number;
     public timeoutId: NodeJS.Timeout | null = null;
     public intervalId: NodeJS.Timeout | null = null;
 
-    constructor(message: string, type: "info" | "success" | "error", duration = 3000) {
+    constructor(message: string, type: "info" | "success" | "warning" | "error", duration = 3000) {
         this.id = Math.random().toString(36).substring(2, 9);
         this.message = message;
         this.type = type;
@@ -60,6 +60,7 @@ export function ToastsC({
                         `flex items-center justify-between gap-4 px-3 py-2 rounded-md shadow-md text-sm font-medium border text-white
                         ${
                             toast.type === "success" ? "bg-green-600/20 border-green-500/40" : 
+                            toast.type === "warning" ? "bg-yellow-600/20 border-yellow-500/40" :
                             toast.type === "error" ? "bg-red-600/20 border-red-500/40" : 
                             toast.type === "info" ? "bg-blue-600/20 border-blue-500/40" : "" }
                         `}
