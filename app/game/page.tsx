@@ -11,7 +11,7 @@ export default function Game() {
     return (
         <AblyProvider client={client}>
             <ChannelProvider channelName="settings">
-        
+            
             </ChannelProvider>
         </AblyProvider>
     )
