@@ -34,7 +34,7 @@ const details: Record<cv, { name: string; description: string; }> = {
 export type cv = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 export class Card {
-    constructor ( public readonly value: cv, public readonly name: string, public readonly description: string ) { }
+    constructor ( public readonly value: cv, public readonly name: string, public readonly description: string, public readonly id: string ) { }
 
     execute(game: Game, agent: User, instrument: User, value?: cv) {
         // execute action, implement later
@@ -95,9 +95,9 @@ export default class Game {
         ]
         shuffle(deckPool);
         
-        this.deck = deckPool.map((value) => {
+        this.deck = deckPool.map((value, index) => {
             const info = details[value] || { name: "//", descrpition: "??" };
-            return new Card(value, info.name, info.description);
+            return new Card(value, info.name, info.description, `${value}-${index}`);
         });
 
         this.frender();
@@ -142,6 +142,16 @@ export default class Game {
 
             return;
         }
+    }
+
+
+    playCard(id: number, card: Card): void {
+        console.log("Hi");
+        this.players[id].hand = this.players[id].hand.filter((value: Card) => { return value.id !== card.id });
+        console.log(this.players[id].hand);
+        this.players[id].discarded.push(card);
+        this.frender();
+        return;
     }
 
 }

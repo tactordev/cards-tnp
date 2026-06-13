@@ -28,6 +28,10 @@ function useGameC() {
     return context;
 }
 
+function parseCardPath(card: Card) {
+    return `/cards/playing_cards/${card.value === 1 ? "A_of_diamonds" : card.value === 10 ? "T_of_diamonds" : card.value === 0 ? "red_joker" : `${card.value}_of_diamonds`}.png`
+}
+
 function Prompt() {
     const gc = useGameC();
 
@@ -57,6 +61,10 @@ function Prompt() {
 
 function Hand({ id }: { id: number; }) {
     const gc = useGameC();
+
+    const playCard = (card: Card) => {
+        return gc.game!.playCard(id, card);
+    }
     
     return (
         gc.game ?
@@ -71,7 +79,12 @@ function Hand({ id }: { id: number; }) {
                     <div className="flex flex-row items-center justify-center gap-2">
                         {
                             gc.game.players[id].hand.map((card, index) => (
-                                <Image src={`/cards/playing_cards/${card.value === 1 ? "A_of_diamonds" : card.value === 10 ? "T_of_diamonds" : card.value === 0 ? "red_joker" : `${card.value}_of_diamonds`}.png`}alt={`${card.value}`} width={256} height={256} className="w-28 h-auto hover:cursor-pointer border-1 border-transparent hover:border-yellow-500 rounded-md transition-all duration-200" key={index} />
+                                <motion.div
+                                    key={card.id}
+                                    layoutId={card.id}
+                                >
+                                    <Image src={parseCardPath(card)} alt={`${card.value}`} width={256} height={256} className="w-28 h-auto hover:cursor-pointer border-1 border-transparent hover:border-yellow-500 rounded-md transition-all duration-200" key={index} onClick={() => {playCard(card)}} />
+                                </motion.div>
                             ))
                         }
                     </div>
@@ -97,7 +110,13 @@ function DiscardedHand({ id }: { id: number; }) {
                         <p className="flex items-center min-w-0 overflow-hidden"><span className="inline-block truncate mr-1">{id === 0 ? "Opponent's" : "Your"}</span><span className="shrink-0">discards [{gc.game.players[id].discarded.length}]</span></p>    
                     </div>
                     <div className="flex flex-row items-center justify-center gap-2">
-                        <div className="w-24 h-38" />
+                        {
+                            gc.game.players[id].discarded.length === 0 ? <div className="w-24 h-38" />
+                            : 
+                                <div className="flex flex-row">
+                                  { gc.game.players[id].discarded.map((card: Card, index: number) => <motion.div key={card.id} layoutId={card.id} className="not-first:-ml-22"><Image src={parseCardPath(card)} key={index} alt={`${card.value}`} width={256} height={256} className="w-28 h-auto" /></motion.div>) }  
+                                </div>
+                        }
                     </div>
                 </div>
             </div>
