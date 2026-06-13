@@ -1,5 +1,5 @@
 import { ActionDispatch } from "react";
-
+import Toasts from "@/components/toasts";
 
 
 
@@ -71,7 +71,7 @@ export default class Game {
     public state: "pickup" | "discard" | "choose" = "pickup";
     public stateAgent: number;
 
-    constructor (public readonly id: string, public frender: ActionDispatch<[]>) {
+    constructor (public readonly id: string, public frender: ActionDispatch<[]>, public readonly tm: Toasts) {
         this.players = [];
         this.stateAgent = 1;
         this.initialise([new User(0, "Opponent"), new User(1, "you")]);
@@ -136,6 +136,7 @@ export default class Game {
         } else if (this.state === "choose") {
             // handle logic for the card played
             this.state = "pickup";
+            this.playing = null;
             this.stateAgent = this.stateAgent === 0 ? 1 : 0;
 
             // if switching to automated opponent, add logic here for simulating opponent's moves
@@ -146,10 +147,37 @@ export default class Game {
 
 
     playCard(id: number, card: Card): void {
-        console.log("Hi");
+        if (this.players[id].hand.length === 1) {
+            return this.tm.send("Cannot use this card.", "warning");
+        }
+        switch (card.value) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+                break;
+            case 4:
+                this.players[id].protected = true;
+                this.increment();
+                break;
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+                break;
+            
+            case 10:
+                return this.tm.send("You can't flip over a 10.", "warning");
+
+
+            default:
+                return this.tm.send("Unknown card", "error");
+        }
         this.players[id].hand = this.players[id].hand.filter((value: Card) => { return value.id !== card.id });
-        console.log(this.players[id].hand);
         this.players[id].discarded.push(card);
+        this.playing = card;
+        this.increment();
         this.frender();
         return;
     }

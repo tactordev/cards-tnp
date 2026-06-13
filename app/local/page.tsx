@@ -13,7 +13,6 @@ import {
 type gcType = {
     game: Game | null,
     playerId: number,
-    tm: Toasts | null
 };
 
 const GameContext = createContext<gcType | undefined>(undefined);
@@ -36,8 +35,8 @@ function Prompt() {
     const gc = useGameC();
 
     function sendToast() {
-        if (!gc.tm) return;
-        gc.tm.send("Why'd you click here? You need something?");
+        if (!gc.game) return;
+        gc.game.tm.send("Why'd you click here? You need something?");
     }
 
     if (!gc || !gc.game) return;
@@ -49,12 +48,12 @@ function Prompt() {
                         Waiting for {gc.game.players[gc.game.stateAgent].name} to {
                             gc.game.state === "pickup" ? "pick up a card from the deck."
                             : gc.game.state === "discard" ? `use a card from ${gc.game.stateAgent === 1 ? "your" : "their"} hand.`
-                            : `choose a person to use ${gc.game.stateAgent === 1 ? "your" : "their"} card against.`
+                            : `complete ${gc.game.stateAgent === 1 ? "your" : "their"} card's action.`
                         }
                     </motion.p>
                 </AnimatePresence>
             </div>
-            <ToastsC tm={gc.tm} />
+            <ToastsC tm={gc.game.tm} />
         </div>
     )
 }
@@ -113,8 +112,8 @@ function DiscardedHand({ id }: { id: number; }) {
                         {
                             gc.game.players[id].discarded.length === 0 ? <div className="w-24 h-38" />
                             : 
-                                <div className="flex flex-row">
-                                  { gc.game.players[id].discarded.map((card: Card, index: number) => <motion.div key={card.id} layoutId={card.id} className="not-first:-ml-22"><Image src={parseCardPath(card)} key={index} alt={`${card.value}`} width={256} height={256} className="w-28 h-auto" /></motion.div>) }  
+                                <div className="flex flex-row *[&>*:not(:only-child)]:bg-white">
+                                  { gc.game.players[id].discarded.map((card: Card, index: number) => <motion.div key={card.id} layoutId={card.id} className="not-first:-ml-22 hover:-translate-y-8 hover:not-last:pr-11 hover:z-0 z-0 transition-all duration-200"><Image src={parseCardPath(card)} key={index} alt={`${card.value}`} width={256} height={256} className="w-28 h-auto" /></motion.div>) }  
                                 </div>
                         }
                     </div>
@@ -129,9 +128,9 @@ function Deck() {
 
 
     function deckClick(e: React.MouseEvent) {
-        if (!gc.game || !gc.tm) return;
+        if (!gc.game || !gc.game.tm) return;
         if (gc.game.state !== "pickup" && gc.game.stateAgent !== 0) {
-            gc.tm.send("You cannot pick up a card right now.", "warning", 3000);
+            gc.game.tm.send("You cannot pick up a card right now.", "warning", 3000);
             return;
         }
         const top = gc.game.deck.pop();
@@ -157,15 +156,39 @@ function Deck() {
 function ActionBoard() {
     const gc = useGameC();
 
+
+    function CardUse() {
+        switch (gc.game!.playing!.value) {
+            case 1:
+                return (
+                    <div>
+                        <div>
+
+                        </div>
+
+                    </div>
+                )
+            case 2:
+            case 3:
+            case 6:
+            
+            default:
+                return (
+                    <div className="flex flex-col w-full items-center justify-center">
+                        <CircleSlash width={48} height={48} className="w-12 h-auto text-white/80" />
+                        <p className="text-white/80 pt-4 text-lg">Waiting...</p>
+                    </div>
+                )
+        }
+    }
+
     return (
         <GameContext.Provider value={gc}>
-            <div className="hand-background rounded-md py-4 px-8 h-full flex flex-col items-center justify-center">
+            <div className="hand-background rounded-md py-4 px-8 h-full flex flex-col items-center justify-center min-w-64">
                 {
                     gc.game ?
                         gc.game.playing ? 
-                            <div>
-                                <Image src={`/cards/final_${gc.game.playing.value}.png`} width={120} height={256} alt="played card" className="w-full h-auto" />
-                            </div>
+                            <CardUse />
                         :   <div className="flex flex-col w-full items-center justify-center">
                                 <CircleSlash width={48} height={48} className="w-12 h-auto text-white/80" />
                                 <p className="text-white/80 pt-4 text-lg">No card played</p>
@@ -182,11 +205,11 @@ function ActionBoard() {
 
 export default function LocalGame() {
     
-    const [gc, setGc] = useState<gcType>({game: null, playerId: 0, tm: null});
+    const [gc, setGc] = useState<gcType>({game: null, playerId: 0});
     const [_, fupdate] = useReducer(x => x + 1, 0);
 
     useEffect(() => {
-        setGc({game: new Game("1", fupdate), playerId: 1, tm: new Toasts(fupdate)})
+        setGc({game: new Game("1", fupdate, new Toasts(fupdate)), playerId: 1})
     }, []);
 
     return (
