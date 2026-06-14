@@ -1,14 +1,18 @@
 "use client";
 import { createContext, useState, useEffect, useReducer, useContext } from "react";
 import Image from "next/image";
-import Game, { Card, User } from "@/components/game";
+import Game, { Card, cv, User } from "@/components/game";
 import Toasts, { ToastsC } from "@/components/toasts";
 import { AnimatePresence, motion } from "motion/react";
 import { 
+    ChevronLeft,
+    ChevronRight,
+    ChevronRightCircle,
     Circle,
     CircleSlash,
     CircleUser
 } from "lucide-react";
+import { parse } from "path";
 
 type gcType = {
     game: Game | null,
@@ -73,7 +77,7 @@ function Hand({ id }: { id: number; }) {
                 <div className={`hand-background rounded-md py-4 px-8 flex flex-col items-center justify-center ${gc.game.stateAgent === id ? "!bg-blue-300/20 !border-blue-300/60" : ""} w-72`}>
                     <div className="flex flex-row items-center justify-center gap-2 font-semibold text-lg mb-2">
                         <CircleUser />
-                        <p>{id === 0 ? "Opponent's hand" : "Your hand"} [{gc.game.players[id].hand.length}]</p>
+                        <p className="select-none">{id === 0 ? "Opponent's hand" : "Your hand"} [{gc.game.players[id].hand.length}]</p>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-2">
                         {
@@ -82,7 +86,7 @@ function Hand({ id }: { id: number; }) {
                                     key={card.id}
                                     layoutId={card.id}
                                 >
-                                    <Image src={parseCardPath(card)} alt={`${card.value}`} width={256} height={256} className="w-28 h-auto hover:cursor-pointer border-1 border-transparent hover:border-yellow-500 rounded-md transition-all duration-200" key={index} onClick={() => {playCard(card)}} />
+                                    <Image src={parseCardPath(card)} alt={`${card.value}`} width={256} height={256} className="w-28 h-auto hover:cursor-pointer border-1 border-transparent hover:border-yellow-500 rounded-md transition-all duration-200 select-none" key={index} onClick={() => {playCard(card)}} />
                                 </motion.div>
                             ))
                         }
@@ -106,7 +110,7 @@ function DiscardedHand({ id }: { id: number; }) {
                 <div className={`hand-background rounded-md py-4 px-8 flex flex-col items-center justify-center w-78 h-full ${gc.game.stateAgent === id ? "!bg-blue-300/20 !border-blue-300/60" : ""}`}>
                     <div className="flex flex-row items-center justify-center gap-2 font-semibold text-lg mb-2">
                         <CircleUser />
-                        <p className="flex items-center min-w-0 overflow-hidden"><span className="inline-block truncate mr-1">{id === 0 ? "Opponent's" : "Your"}</span><span className="shrink-0">discards [{gc.game.players[id].discarded.length}]</span></p>    
+                        <p className="flex items-center min-w-0 overflow-hidden select-none"><span className="inline-block truncate mr-1">{id === 0 ? "Opponent's" : "Your"}</span><span className="shrink-0">discards [{gc.game.players[id].discarded.length}]</span></p>    
                     </div>
                     <div className="flex flex-row items-center justify-center gap-2">
                         {
@@ -145,9 +149,9 @@ function Deck() {
 
     return (
         <GameContext.Provider value={gc}>
-            <div className="hand-background rounded-md py-4 px-8 flex items-center justify-center flex-col">
+            <div className="hand-background rounded-md py-4 px-8 flex items-center justify-center flex-col h-full">
                 <Image src="/cards/back.png" width={256} height={256} alt="card deck" className="w-28 h-auto" onClick={deckClick} />
-                <p className="text-white/60 pt-4">Cards left: { gc.game ? gc.game.deck.length : "game loading..." }</p>
+                <p className="text-white/60 pt-4 select-none">Cards left: { gc.game ? gc.game.deck.length : "game loading..." }</p>
             </div>
         </GameContext.Provider>
     )
@@ -160,12 +164,25 @@ function ActionBoard() {
     function CardUse() {
         switch (gc.game!.playing!.value) {
             case 1:
+                const [card, setCard] = useState<Card>(new Card(1, "//", "//", "guessing-1"));
+
                 return (
-                    <div>
-                        <div>
-
+                    <div className="flex flex-col items-center justify-center">
+                        <div className="flex flex-row items-center justify-center">
+                            <p className="text-white/60 text-xl font-semibold mb-2">Guess a card</p>
                         </div>
-
+                        <div>
+                            <Image src={parseCardPath(card)} width={256} height={256} alt="1" className="w-28 h-auto select-none" />
+                        </div>
+                        <div className="flex flex-row items-center justify-center mt-2 gap-2">
+                            <div className="flex flex-row hand-background rounded-md hover:!bg-blue-300/30 hover:!border-blue-300/60 hover:cursor-pointer duration-200 transition-all" onClick={() => {setCard(card.value === 1 ? new Card(10, "//", "//", "guessing-10") : new Card(card.value - 1 as cv, "//", "//", `guessing-${card.value - 1}`))}}>
+                                <ChevronLeft width={48} height={48} className="w-8 h-auto text-white pointer-events-none" />
+                            </div>
+                            <p className={`text-lg font-semibold text-white/80 hand-background rounded-md px-2 h-full hover:!bg-blue-300/30 hover:!border-blue-300/60 select-none ${card.value === 1 ? "hover:cursor-not-allowed" : "hover:cursor-pointer"} duration-200 transition-all`}>Guess</p>
+                            <div className="flex flex-row hand-background rounded-md hover:!bg-blue-300/30 hover:!border-blue-300/60 hover:cursor-pointer duration-200 transition-all" onClick={() => {setCard(card.value === 10 ? new Card(1, "//", "//", "guessing-1") : new Card(card.value + 1 as cv, "//", "//", `guessing-${card.value + 1}`))}} >
+                                <ChevronRight width={48} height={48} className="w-8 h-auto text-white pointer-events-none" />
+                            </div>
+                        </div>
                     </div>
                 )
             case 2:
