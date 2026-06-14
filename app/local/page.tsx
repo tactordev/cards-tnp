@@ -45,10 +45,10 @@ function Prompt() {
 
     if (!gc || !gc.game) return;
     return (
-        <div className="absolute top-4 left-4 w-64">
-            <div className="hand-background rounded-md px-4 py-2" onClick={sendToast}>
+        <div className="w-160">
+            <div className="hand-background rounded-md px-4 py-2 flex flex-row items-center justify-center" onClick={sendToast}>
                 <AnimatePresence>
-                    <motion.p>
+                    <motion.p initial={{opacity: 0}} exit={{opacity: 0}} animate={{opacity: 1}} className="opacity-100">
                         Waiting for {gc.game.players[gc.game.stateAgent].name} to {
                             gc.game.state === "pickup" ? "pick up a card from the deck."
                             : gc.game.state === "discard" ? `use a card from ${gc.game.stateAgent === 1 ? "your" : "their"} hand.`
@@ -57,7 +57,6 @@ function Prompt() {
                     </motion.p>
                 </AnimatePresence>
             </div>
-            <ToastsC tm={gc.game.tm} />
         </div>
     )
 }
@@ -231,25 +230,28 @@ export default function LocalGame() {
 
     return (
         <GameContext.Provider value={gc}>
-            <main className="fixed top-0 left-0 w-screen h-screen boarded-background flex flex-col gap-12 items-center justify-center">
-                <Prompt />
-                <div className="flex flex-row gap-4"> {/* opponent hand */}
-                    <Hand id={0} />
-                    <DiscardedHand id={0} />
-                </div>
-
-                <div className="flex flex-row gap-4">
-                    <div> {/* deck */}
-                        <Deck />
+            <main className="fixed top-0 left-0 w-screen h-screen boarded-background flex items-center justify-center">
+                <div className="flex flex-col gap-12 items-center justify-center w-full relative">
+                    <Prompt />
+                    <div className="flex flex-row gap-4"> {/* opponent hand */}
+                        <Hand id={0} />
+                        <DiscardedHand id={0} />
                     </div>
-                    <div> {/* area of play */}
-                        <ActionBoard />
-                    </div>
-                </div>
 
-                <div className="flex flex-row gap-4"> {/* player hand */}
-                    <Hand id={1} />
-                    <DiscardedHand id={1} />
+                    <div className="flex flex-row gap-4">
+                        <div> {/* deck */}
+                            <Deck />
+                        </div>
+                        <div> {/* area of play */}
+                            <ActionBoard />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-row gap-4"> {/* player hand */}
+                        <Hand id={1} />
+                        <DiscardedHand id={1} />
+                    </div>
+                    <div className="absolute top-full overflow-hidden pb-8">{gc.game && (<ToastsC tm={gc.game!.tm} />)}</div>
                 </div>
             </main>
         </GameContext.Provider>
