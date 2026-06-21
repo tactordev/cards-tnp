@@ -159,6 +159,23 @@ function Deck() {
 function ActionBoard() {
     const gc = useGameC();
 
+    function guess(card: Card) {
+        if (!gc.game) return;
+        if (card.value === 1) { gc.game.tm.send("You cannot guess a 1.", "warning"); gc.game.frender(); return; };
+
+        console.log(gc.game.players);
+        console.log(gc.game.stateAgent);
+        if (card.value === gc.game.players[gc.game.stateAgent === 0 ? 1 : 0].hand[0].value) {
+            gc.game.finish(gc.game.players[gc.game.stateAgent], "Guessed the other person's card correctly.");
+            gc.game.frender();
+            return;
+        } else {
+            gc.game.tm.send("Incorrect guess.", "warning", 1000);
+            gc.game.increment();
+            gc.game.frender();
+        }
+    }
+
 
     function CardUse() {
         switch (gc.game!.playing!.value) {
@@ -177,14 +194,21 @@ function ActionBoard() {
                             <div className="flex flex-row hand-background rounded-md hover:!bg-blue-300/30 hover:!border-blue-300/60 hover:cursor-pointer duration-200 transition-all" onClick={() => {setCard(card.value === 1 ? new Card(10, "//", "//", "guessing-10") : new Card(card.value - 1 as cv, "//", "//", `guessing-${card.value - 1}`))}}>
                                 <ChevronLeft width={48} height={48} className="w-8 h-auto text-white pointer-events-none" />
                             </div>
-                            <p className={`text-lg font-semibold text-white/80 hand-background rounded-md px-2 h-full hover:!bg-blue-300/30 hover:!border-blue-300/60 select-none ${card.value === 1 ? "hover:cursor-not-allowed" : "hover:cursor-pointer"} duration-200 transition-all`}>Guess</p>
+                            <p className={`text-lg text-white/80 hand-background rounded-md px-2 h-full hover:!bg-blue-300/30 hover:!border-blue-300/60 select-none ${card.value === 1 ? "hover:cursor-not-allowed pointer-events-hover" : "hover:cursor-pointer"} duration-200 transition-all`} onClick={() => {guess(card)}}>Guess</p>
                             <div className="flex flex-row hand-background rounded-md hover:!bg-blue-300/30 hover:!border-blue-300/60 hover:cursor-pointer duration-200 transition-all" onClick={() => {setCard(card.value === 10 ? new Card(1, "//", "//", "guessing-1") : new Card(card.value + 1 as cv, "//", "//", `guessing-${card.value + 1}`))}} >
                                 <ChevronRight width={48} height={48} className="w-8 h-auto text-white pointer-events-none" />
                             </div>
                         </div>
                     </div>
-                )
+                );
             case 2:
+                const [position, setPosition] = useState<number>(1);
+                const c2 = gc.game!.deck.pop();
+                return (
+                    <div>
+                        <p>2</p>
+                    </div>
+                );
             case 3:
             case 6:
             
@@ -231,28 +255,38 @@ export default function LocalGame() {
     return (
         <GameContext.Provider value={gc}>
             <main className="fixed top-0 left-0 w-screen h-screen boarded-background flex items-center justify-center">
-                <div className="flex flex-col gap-12 items-center justify-center w-full relative">
-                    <Prompt />
-                    <div className="flex flex-row gap-4"> {/* opponent hand */}
-                        <Hand id={0} />
-                        <DiscardedHand id={0} />
-                    </div>
+                {gc.game && (
+                    
+                    gc.game.finished ?
+                        (
+                            <div>
+                                <p>game finished</p>
+                            </div>
+                        )
+                    : 
+                        (<div className="flex flex-col gap-12 items-center justify-center w-full relative">
+                            <Prompt />
+                            <div className="flex flex-row gap-4"> {/* opponent hand */}
+                                <Hand id={0} />
+                                <DiscardedHand id={0} />
+                            </div>
 
-                    <div className="flex flex-row gap-4">
-                        <div> {/* deck */}
-                            <Deck />
-                        </div>
-                        <div> {/* area of play */}
-                            <ActionBoard />
-                        </div>
-                    </div>
+                            <div className="flex flex-row gap-4">
+                                <div> {/* deck */}
+                                    <Deck />
+                                </div>
+                                <div> {/* area of play */}
+                                    <ActionBoard />
+                                </div>
+                            </div>
 
-                    <div className="flex flex-row gap-4"> {/* player hand */}
-                        <Hand id={1} />
-                        <DiscardedHand id={1} />
-                    </div>
-                    <div className="absolute top-full overflow-hidden pb-8">{gc.game && (<ToastsC tm={gc.game!.tm} />)}</div>
-                </div>
+                            <div className="flex flex-row gap-4"> {/* player hand */}
+                                <Hand id={1} />
+                                <DiscardedHand id={1} />
+                            </div>
+                            <div className="absolute top-full overflow-hidden pb-8 px-4">{gc.game && (<ToastsC tm={gc.game!.tm} />)}</div>
+                        </div>)
+                )}
             </main>
         </GameContext.Provider>
     )

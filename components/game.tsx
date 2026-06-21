@@ -1,5 +1,6 @@
 import { ActionDispatch } from "react";
 import Toasts from "@/components/toasts";
+import { TruckElectric } from "lucide-react";
 
 
 
@@ -70,12 +71,15 @@ export default class Game {
     public playing: Card | null = null;
     public state: "pickup" | "discard" | "choose" = "pickup";
     public stateAgent: number;
+    public finished: boolean = false;
+    public winner: User | null = null;
+    public winCondition: string | null = null;
 
     constructor (public readonly id: string, public frender: ActionDispatch<[]>, public readonly tm: Toasts) {
         this.players = [];
         this.stateAgent = 1;
         this.initialise([new User(0, "Opponent"), new User(1, "you")]);
-
+        
     }
 
     private randomiseDeck() {
@@ -180,6 +184,15 @@ export default class Game {
         this.increment();
         this.frender();
         return;
+    }
+
+    finish(winner: User, winCondition: string) {
+        this.finished = true;
+        this.turn = null;
+
+        this.winner = winner;
+        this.winCondition = winCondition;
+        return true;
     }
 
 }
