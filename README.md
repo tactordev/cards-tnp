@@ -1,7 +1,7 @@
 
-### Tactor Cards: TNP.
+### Tactor Cards: War Game.
 
-TNP: Tactor's Nifty Pets.
+War Game.
 A card game based off of Power Hungry Pets with a special twist.
 
 
